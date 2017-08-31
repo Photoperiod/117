@@ -39,18 +39,30 @@ void RemoveWS()
 
 int Exp()
 {
+	/* 
+	this is used to get an expression. It calls Exp2, which lets us know which expression we have encountered
+	*/
 	cout << "Exp()" << endl;
 	return Exp2(Term());
 }
 
 int Term()
 {
+	/* 
+	this function calls on Term2 to get a single Term. We call this function from the other functions so that we can grab
+	the next term in the equation
+	*/
 	cout << "Term()" << endl;
 	return Term2(Fact());
 }
 
 int Exp2(int inp)
 {
+	/*
+	this function handles the + and - expressions. It will recurse on itself if it detects either operator.
+	The recursion will call on Term() again to get the next term, which will then be sent to Term2 first, which will check the next operator as well.
+	calling on Term2 again will make sure that if a * or / is found, then the next Term will be multiplied or divided instead of added or subtracted.
+	*/
 	cout << "Exp2(" << inp << ")" << endl;
 	int result = inp;
 	if (indexx < prog.length())   //if not the end of program string
@@ -66,12 +78,12 @@ int Exp2(int inp)
 
 int Term2(int inp)
 {
-	/* This function identifies the operator that comes after the parameter term.
+	/* 
+	This function identifies the operator that comes after the parameter term.
 	 If the operator is * or /, then precadence takes over and we recurse, passing (current parameter * next parameter) or 
 	 (current parameter / next parameter) into Term2 again.
 	 We get the next parameter by calling Fact().
-	 If we detect a + or -, we decrement our index and let the function return the original parameter value.
-	 The original parameter then gets passed to Exp2() to handle + and - cases.
+	 If we detect a + or -, we decrement our index and let the function return the original parameter value to the Exp2 function to handle +, - operators
 	 */
 	cout << "Term2(" << inp << ")" << endl;
 	int result = inp;
@@ -93,6 +105,7 @@ int Fact()
 	// This function turns a character in the input data into an integer and returns that integer.
 	// It's primarily used to get terms
 	// Indexx is incremented whenever this function is called.
+	// This function is called by the Term function, which is called within the Exp2 function for + and - operators
 	cout << "Fact()" << endl;
 	char a = prog.at(indexx++); //get one chr from program string
 	return atoi(&a); //converts a char to a numeric number and return
