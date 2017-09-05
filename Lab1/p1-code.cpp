@@ -8,9 +8,10 @@
 #include <cstdlib> //for atoi()
 #include <iostream>
 #include <ctype.h>
+#include <cmath> // for pow()
 using namespace std;
 
-int Exp(), Term(), Exp2(int), Term2(int), Fact();
+int Exp(), Term(), Exp2(int), Term2(int), Fact(), Fact2(int), Num();
 void RemoveWS();
 string prog; //string for reading 1-line input program
 int indexx = 0; //global index for program string
@@ -94,7 +95,7 @@ int Term2(int inp)
 			result = Term2(result * Fact()); //handles consecutive * operators
 		else if (a == '/')
 			result = Term2(result / Fact()); //handles consecutive / operators
-		else if (a == '+' || a == '-')     //if + or -, get back one position
+		else if (a == '+' || a == '-' || a == ')')     //if + or -, get back one position
 			indexx--;
 	}
 	return result;
@@ -106,7 +107,42 @@ int Fact()
 	// It's primarily used to get terms
 	// Indexx is incremented whenever this function is called.
 	// This function is called by the Term function, which is called within the Exp2 function for + and - operators
-	cout << "Fact()" << endl;
+	/*cout << "Fact()" << endl;
 	char a = prog.at(indexx++); //get one chr from program string
-	return atoi(&a); //converts a char to a numeric number and return
+
+	if (a == '(')
+		return Exp();
+
+	return atoi(&a); //converts a char to a numeric number and return*/
+	return Fact2(Num());
+}
+
+int Fact2(int inp)
+{
+	/*
+	handles exponent
+	*/
+	cout << "Fact2(" << inp << ")" << endl;
+	int result = inp;
+	if (indexx < prog.length())   //if not the end of program string
+	{
+		char a = prog.at(indexx++); //get one chr from program string
+		if (a == '^')
+			result = Fact2(pow(result, Fact()));
+		else
+			indexx--;
+	}
+	return result;
+
+}
+
+int Num()
+{
+	cout << "Num()" << endl;
+	char a = prog.at(indexx++);
+
+	if (a == '(')
+		return Exp();
+	
+	return atoi(&a);
 }
