@@ -1,4 +1,7 @@
 /////////////////////////////////////////////
+//// Mark Philipp
+//// 109941708
+////
 //// Interpreter for simplified infix expression with +,-,*,/.
 ////
 //// File input. Variable names can be longer than a single character.
@@ -11,7 +14,6 @@
 //// run with: a.exe filename
 /////////////////////////////////////////////
 
-#include <cstdlib> //for atoi()
 #include <iostream>
 #include <ctype.h>
 #include <cmath> // for pow()
@@ -27,12 +29,10 @@ void RemoveWS(), Exit(), Exit(string), Declarations(), Statements(), Declaration
 class Symbol
 {
 	// This class will keep track of our variable names, types, and values.
-
 public:
 	Symbol(string newID, string newType, double newVal)
 	{
 		// 3-parameter constructor
-
 		_id = newID;
 		_type = newType;
 		if (_type == "int")
@@ -88,13 +88,14 @@ vector<Symbol> symbolTable; // vector of SymbolTable class objects
 int main(int argc, const char **argv)
 {
 	string endString;
-	bool doesEndExist = false;
+	bool doesEndExist = false; // flag for if statement that checks for 'end' keyword
 
 	input.open(argv[1]); // begin input stream from command line argument file
 	checkForEnd.open(argv[1]);
 
 	while (!checkForEnd.eof())
 	{
+		// Check for 'end' keyword.
 		checkForEnd >> endString;
 		if (endString == "end")
 			doesEndExist = true;
@@ -108,6 +109,7 @@ int main(int argc, const char **argv)
 	oldPosition = input.tellg(); // store old input position in case we need to go backwards
 	input >> word;
 	line++;
+
 	if (word == "program")
 	{
 		line++;
@@ -123,6 +125,7 @@ int main(int argc, const char **argv)
 
 void RemoveWS()
 {
+	// This function removes whitespace from prog string
 
 	if (prog.back() == ';')
 		// remove semicolon from string
@@ -140,8 +143,6 @@ void RemoveWS()
 			i--; // String length has shortened by 1, decrement i to reflect this change
 		}
 	}
-
-	
 }
 
 void Exit()
@@ -156,10 +157,12 @@ void Exit(string errorMessage)
 	This overloaded function will throw an error that shows the line # the error is on, and the
 	message that was passed as a parameter.
 	*/
+
 	if (line > 0)
-		// This case is used for when "program" is missing from file
+		// This case runs when we are beyond the "program" statement
 		cout << "Error on line " << line << ": " << errorMessage << endl;
 	else
+		// This will execute if "program" statement is missing
 		cout << errorMessage << endl;
 
 	exit(1);
@@ -175,7 +178,6 @@ void Declarations()
 	oldPosition = input.tellg();
 	input >> word;
 	
-
 	if (word == "begin")
 	{
 		// Once we read begin, we can end our declaration phase.
@@ -188,7 +190,8 @@ void Declarations()
 		Declaration(word);
 	}
 	else if(word == "float" || word == "string" || word == "short" || word == "long" || word == "char")
-		Exit("Semantic Error: Type '" + word + "' Does Not Exist"); // check for invalid type semantic error
+		// check for invalid type semantic error
+		Exit("Semantic Error: Type '" + word + "' Does Not Exist"); 
 	else
 		// Throw a syntax error if we don't recognize any of the keywords in the file
 		Exit("Lexical Error: Declaration must be 'begin', 'int', or 'double'");
@@ -212,6 +215,7 @@ void Statement(string variableName)
 		PrintStatement();
 	}
 	else if (variableName.back() == ';')
+		// handles cases where there is a semicolon follow the variableName. Example: a;
 		Exit("Syntax Error: Invalid Statement '" + variableName +"'");
 	else 
 	{
@@ -269,8 +273,10 @@ void Declaration(string type)
 		// until we find a semicolon, keep looping
 
 		oldPosition = input.tellg(); // save input buffer position
-		input >> id;
+		input >> id; // read one word at a time
 
+		// we need to check for commas in variable names since fstream is reading a whole word at a time
+		// this means fstream might recognize "a," as a whole word. Need to remove the comma
 		if (id.length() > 1 && id.find(',') != std::string::npos)
 		{
 			// remove comma from ID. handles statements like int a, b, c;
@@ -306,7 +312,14 @@ void Declaration(string type)
 		{
 			//check syntax of variable name for errors.
 			if (!isalpha(id.at(i)))
-				Exit("Lexical Error: Variable name " + id + " is invalid. Variable name must only contain letters");
+				Exit("Lexical Error: Variable name '" + id + "' is invalid. Variable name must only contain letters");
+		}
+
+		for (auto &item : symbolTable)
+		{
+			if (item.GetID() == id)
+				// id already exists, throw semantic error
+				Exit("Semantic Error: variable name '" + id + "' already declared");
 		}
 
 		Symbol newItem(id, type, 0.0); // create new Symbol object
@@ -335,9 +348,10 @@ void PrintStatement()
 
 	if (isalpha(newID.at(0)))
 	{
-		// search for variable ID in symbol table. Throw error if name not found. Print value if it is found.
+		// if first character is a letter, then we will print a variable value
 		for (auto &item : symbolTable)
 		{
+			// search for variable ID in symbol table. Throw error if name not found. Print value if it is found.
 			if (newID == item.GetID())
 			{
 				variableFound = true;
@@ -352,7 +366,7 @@ void PrintStatement()
 	}
 	else
 	{
-		// Execute print expression code
+		// if first character is not a letter, then we print an expression
 		input.seekg(oldPosition); // move input buffer back to old position so we can read line again
 		getline(input, prog);
 		RemoveWS();
@@ -377,7 +391,7 @@ void AssignStatement(string newID)
 
 	if (word.at(0) == '=')
 	{
-		double newVal = 0; // newValue will be assigned to left-hand variable
+		double newVal = 0; // left-hand variable will be assigned value of newVal
 		oldPosition = input.tellg();
 		getline(input, prog);
 		RemoveWS();
@@ -425,7 +439,7 @@ void AssignStatement(string newID)
 			Exit("Semantic Error: Variable '" + newID + "' does not exist");
 	}
 	else
-		Exit("Syntax Error. Variable " + newID + " must have '=' operator to assign it a new value");
+		Exit("Syntax Error. Variable '" + newID + "' must have '=' operator to assign it a new value");
 
 }
 
@@ -532,7 +546,6 @@ int Fact2(double inp)
 			indexx--;
 	}
 	return result;
-
 }
 
 int Num()
