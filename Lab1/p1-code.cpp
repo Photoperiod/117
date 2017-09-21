@@ -1,7 +1,13 @@
 /////////////////////////////////////////////
 //// Interpreter for simplified infix expression with +,-,*,/.
-//// Keyboard input, single digit numbers only and no spaces are allowed.
-//// compile:  $>g++ prog1.cpp -std=c++11
+////
+//// File input. Variable names can be longer than a single character.
+//// +, -, /, *, ^, (), and = operators all recognized
+//// Valid keywords are "program", "begin", "end", and "print".
+//// valid Types are int and double
+//// int can be assigned a double value but the double will automatically cast to integer, removing decimal values.
+////
+//// compile:  $> g++ prog1.cpp -std=c++11
 //// run with: a.exe filename
 /////////////////////////////////////////////
 
@@ -34,7 +40,7 @@ public:
 		else if (_type == "double")
 			_value = newVal;
 		else
-			Exit("Error: Type '" + newType + " Does Not Exist"); // check for invalid type symantic error
+			Exit("Semantic Error: Type '" + newType + " Does Not Exist"); // check for invalid type symantic error
 	}
 
 	string GetID()
@@ -97,7 +103,7 @@ int main(int argc, const char **argv)
 	checkForEnd.close();
 
 	if (!doesEndExist)
-		Exit("Keyword 'end' does not exist. Please put 'end' at the bottom of your program");
+		Exit("Syntax Error: Keyword 'end' does not exist. Please put 'end' at the bottom of your program");
 
 	oldPosition = input.tellg(); // store old input position in case we need to go backwards
 	input >> word;
@@ -110,13 +116,21 @@ int main(int argc, const char **argv)
 	}
 	else
 		// throw error for lacking program keyword
-		Exit("No entry point for program. Please declare 'program' in your file");
+		Exit("Syntax Error: No entry point for program. Please declare 'program' in your file");
 	
 	input.close();
 }
 
 void RemoveWS()
 {
+
+	if (prog.back() == ';')
+		// remove semicolon from string
+		prog.pop_back();
+	else
+		// throw syntax error for lacking semicolon
+		Exit("Syntax Error: No semicolon at end of expression ");
+
 	// Iterate over input string and remove whitespace
 	for (int i = 0; i < prog.length(); i++)
 	{
@@ -126,11 +140,8 @@ void RemoveWS()
 			i--; // String length has shortened by 1, decrement i to reflect this change
 		}
 	}
-	if (prog.back() == ';')
-		prog.pop_back();
-	else
-		// throw syntax error for lacking semicolon
-		Exit("No semicolon at end of expression " + prog);
+
+	
 }
 
 void Exit()
@@ -146,9 +157,10 @@ void Exit(string errorMessage)
 	message that was passed as a parameter.
 	*/
 	if (line > 0)
+		// This case is used for when "program" is missing from file
 		cout << "Error on line " << line << ": " << errorMessage << endl;
 	else
-		cout << "Error: " << errorMessage << endl;
+		cout << errorMessage << endl;
 
 	exit(1);
 }
@@ -167,6 +179,7 @@ void Declarations()
 	if (word == "begin")
 	{
 		// Once we read begin, we can end our declaration phase.
+		line++;
 		return;
 	}
 	else if (word == "int" || word == "double")
@@ -174,9 +187,11 @@ void Declarations()
 		// Once we've identified a valid type, we will begin a declaration
 		Declaration(word);
 	}
+	else if(word == "float" || word == "string" || word == "short" || word == "long" || word == "char")
+		Exit("Semantic Error: Type '" + word + "' Does Not Exist"); // check for invalid type semantic error
 	else
-		// Throw a lexical error if we don't recognize any of the keywords in the file
-		Exit("Lexical Error. Declaration must be 'begin', 'int', or 'double'");
+		// Throw a syntax error if we don't recognize any of the keywords in the file
+		Exit("Lexical Error: Declaration must be 'begin', 'int', or 'double'");
 
 	line++;
 	Declarations(); // reiterate until we read "begin"
@@ -197,7 +212,7 @@ void Statement(string variableName)
 		PrintStatement();
 	}
 	else if (variableName.back() == ';')
-		Exit("Invalid Statement '" + variableName +"'");
+		Exit("Syntax Error: Invalid Statement '" + variableName +"'");
 	else 
 	{
 		for (auto &item : symbolTable)
@@ -274,7 +289,7 @@ void Declaration(string type)
 
 		if (id.find(';') != std::string::npos)
 		{
-			// remove semicolon from ID
+			// remove semicolon from ID if it exists
 			for (int i = 0; i < id.length(); i++)
 			{
 				if (id.at(i) == ';')
@@ -291,10 +306,10 @@ void Declaration(string type)
 		{
 			//check syntax of variable name for errors.
 			if (!isalpha(id.at(i)))
-				Exit("Variable name " + id + " is invalid. Variable name must only contain letters");
+				Exit("Lexical Error: Variable name " + id + " is invalid. Variable name must only contain letters");
 		}
 
-		Symbol newItem(id, type, 0); // create new Symbol object
+		Symbol newItem(id, type, 0.0); // create new Symbol object
 		symbolTable.push_back(newItem); // store new symbol into back of vector
 	}
 }
@@ -333,7 +348,7 @@ void PrintStatement()
 			}
 		}
 		if (!variableFound)
-			Exit("Variable '" + newID + "' does not exist"); // throw Semantic error if variable doesn't exist.
+			Exit("Semantic Error: Variable '" + newID + "' does not exist"); // throw Semantic error if variable doesn't exist.
 	}
 	else
 	{
@@ -356,6 +371,7 @@ void AssignStatement(string newID)
 	a = (3+2) * 5;
 	b = a;
 	*/
+
 	input >> word; // get operator
 	bool foundVariableName = false, foundAssignmentVariable = false; // used for control statements
 
@@ -368,7 +384,7 @@ void AssignStatement(string newID)
 
 		if (isalpha(prog.at(0)))
 		{
-			// if right-hand side of statement is variable, assign variable value to left-hand variable
+			// if right-hand side of statement is variable, put variable value into left-hand variable
 			for (auto &item : symbolTable)
 			{
 				// search for ID in symbol table
@@ -384,7 +400,7 @@ void AssignStatement(string newID)
 				}
 			}
 			if (!foundAssignmentVariable)
-				Exit("Variable '" + prog + "' does not exist"); // Throw error
+				Exit("Semantic Error: Variable '" + prog + "' does not exist"); // Throw error
 		}
 		else
 		{
@@ -405,8 +421,8 @@ void AssignStatement(string newID)
 		}
 
 		if (!foundVariableName)
-			// if we don't find the variable, throw lexical error
-			Exit("Variable '" + newID + "' does not exist");
+			// if we don't find the variable, throw semantic error
+			Exit("Semantic Error: Variable '" + newID + "' does not exist");
 	}
 	else
 		Exit("Syntax Error. Variable " + newID + " must have '=' operator to assign it a new value");

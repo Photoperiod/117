@@ -1,0 +1,7 @@
+program
+	&*@&
+	 int a, b;
+	 begin
+	 a = 5;
+	 b = 2 * 5;
+end

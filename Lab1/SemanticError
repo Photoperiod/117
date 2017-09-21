@@ -1,0 +1,5 @@
+program
+	 int a;
+	 begin
+	 a = hello;
+end

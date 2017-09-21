@@ -1,0 +1,6 @@
+program
+	 int 12|&, b;
+	 begin
+	 12|& = 5;
+	 b = 2 * 5;
+end
