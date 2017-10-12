@@ -1,0 +1,6 @@
+<program> ::= program <proc-seq> <decl-seq> begin <state-seq> end;
+<procedure> ::= procedure <idlist> (<declaration>) <declaration-sequence> begin <statement-sequence> end;
+<Type> ::= int | double
+<declaration> ::= declare <Type><idlist>
+<idlist> ::= <id> | <id> , <idlist>
+<id> = a | b | c ... z | A | B | C ... | Z

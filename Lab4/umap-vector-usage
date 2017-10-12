@@ -1,0 +1,36 @@
+----- unordered_map basic operations -----
+
+#include <tr1/unordered-map>   //or, #include <unordered_map>
+using std::tr1::unordered_map; //or, using std::unordered_map; 
+....
+unordered_map<string, size_t> mylist;  //unordered_map for <key, count>
+string key1 = "xxx";
+....
+if (mylist.find(key1) != mylist.end()) //found
+  mylist[key1]++;   //if already exist, counter++
+else //not found (new)
+  mylist[key1] = 1; //add new entry with counter=1
+
+//display unordered_map
+for (unordered_map<string, size_t>::const_iterator it = mylist.begin(); it != mylist.end(); it++)
+  cout<<it->first<<"\t"<<it->second<<endl; 
+
+
+
+----- some basic vector usage -----
+
+#include <vector>
+....
+vector<int> list1, list2;
+int num1 = 5;
+list1.push_back(num1); //add entry to vector
+....
+
+//display vector contents
+for(int i=0; i<list1.size(); i++)
+  cout<<list1[i]<<endl;
+
+list1.erase(list1.begin()+3); //eliminate list1[3]
+
+list1.resize(0); //list1 becomes empty
+
