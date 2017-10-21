@@ -60,6 +60,11 @@ public:
 		return mark;
 	}
 
+	void SetMark(int newMark)
+	{
+		mark = newMark;
+	}
+
 	int SetNext(int newVal)
 	{
 		next = newVal;
@@ -128,11 +133,84 @@ Node* GetNode(Node& nodeToFind)
 		if (node.GetName() == nodeToFind.GetName())
 			return &node;
 	}
+
+	return NULL;
+}
+
+void ResetMarks()
+{
+	for (auto& node : L1)
+		node.SetMark(0);
+	for (auto& node : L2)
+		node.SetMark(0);
+	for (auto& node : freeList)
+		node.SetMark(0);
+	for (auto& node : allNodes)
+		node.SetMark(0);
+}
+
+void MarkPhase()
+{
+	// Any node that is in L1, L2, or freeList are all reachable.
+	// If a node from allNodes does not exist in L1, L2, and freeList, then we know it's garbage because nobody is pointing to it.
+
+	for (auto& node : freeList)
+	{
+		node.SetMark(1);
+		GetNode(node)->SetMark(1); // set node mark in allNodes list
+	}
+	for (auto& node : L1)
+	{
+		node.SetMark(1);
+		GetNode(node)->SetMark(1);
+	}
+	for (auto& node : L2)
+	{
+		node.SetMark(1);
+		GetNode(node)->SetMark(1);
+	}
+}
+
+void SweepPhase()
+{
+	// iterate through allNodes and check their marks.
+	// All nodes with mark value of 0 will be pushed into the beginning of free list.
+
+	for (int i = allNodes.size() - 1; i > -1; i--)
+	{
+		// reverse iterate through the list so we can easily create LIFO behavior using vector push_back
+		if (allNodes.at(i).GetMark() == 0)
+			freeList.push_back(allNodes.at(i));
+	}
+
+	// now that the free list is populated, point each node to next and previous
+
+	for (int i = 0; i < freeList.size(); i++)
+	{
+		if (i == 0)
+		{
+			freeList.at(i).Insertion(freeList.at(i).GetKey(), freeList.at(i + 1).GetName(), -1);
+			GetNode(freeList.at(i))->Insertion(freeList.at(i).GetKey(), freeList.at(i + 1).GetName(), -1);
+		}
+		else if (i > 0 && i < freeList.size() - 1)
+		{
+			freeList.at(i).Insertion(freeList.at(i).GetKey(), freeList.at(i + 1).GetName(), freeList.at(i - 1).GetName());
+			GetNode(freeList.at(i))->Insertion(freeList.at(i).GetKey(), freeList.at(i + 1).GetName(), freeList.at(i - 1).GetName());
+		}
+		else if (i == freeList.size() - 1)
+		{
+			freeList.at(i).Insertion(freeList.at(i).GetKey(), -1, freeList.at(i - 1).GetName());
+			GetNode(freeList.at(i))->Insertion(freeList.at(i).GetKey(), -1, freeList.at(i - 1).GetName());
+		}
+	}
+
+	ResetMarks();
 }
 
 void GarbageCollect()
 {
-
+	MarkPhase();
+	SweepPhase();
 }
 
 void Insert(vector<Node> &nodeList, int key)
@@ -368,5 +446,6 @@ int main(int argc, const char **argv)
 
 	for (auto& i : L2)
 		cout << i.GetName() << endl;*/
+	GarbageCollect();
 	PrintMemory();
 }
