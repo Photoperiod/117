@@ -8,6 +8,7 @@
 ////
 //// compile:  $> g++ Prog5.cpp -std=c++11
 //// run with: a.exe
+//// OR Run with: a.exe < CompleteInput.txt > FinalOutput.txt
 /////////////////////////////////////////////
 
 #include <iostream>
