@@ -1,5 +1,8 @@
-//frame code for programming assignment 6.
-//file name must be same as the main class name, i.e., sr_manager.java
+// Mark Philipp
+// 109941708
+// CSCI 117
+// 11-21-17
+// file name must be same as the main class name, i.e., sr_manager.java
 // run with > java -cp ./;. sr_manager
 
 public class sr_manager // main class
